@@ -17,7 +17,6 @@ st.sidebar.header("⚙️ Controls")
 tickers_input = st.sidebar.text_input("Enter stock tickers (comma-separated):", "AAPL, TSLA, NVDA")
 period = st.sidebar.selectbox("Select time range:", ["1mo", "3mo", "6mo", "1y", "2y", "5y", "max"])
 refresh_rate = st.sidebar.slider("Auto-refresh interval (seconds):", 10, 300, 60)
-theme_choice = st.sidebar.radio("Theme:", ["Cyberpunk Glow", "Classic Trading Chart"])
 
 # --- Finnhub API key input (user-provided) ---
 st.sidebar.subheader("🔑 API Keys")
@@ -56,7 +55,7 @@ else:
 with open("cyberpunk_style_embedded.css", "r", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# --- Centered Title Only (No GitHub Image) ---
+# --- Centered Title Only (Dark Mode) ---
 st.markdown("""
 <div style='text-align:center;'>
     <h1 class='cyberpunk-title'>CYBERPUNK QUOTES</h1>
@@ -130,53 +129,25 @@ for ticker in tickers:
             st.markdown(f"### {info.get('shortName', ticker)}")
             st.caption(f"{info.get('sector', 'N/A')} | {info.get('industry', 'N/A')}")
 
-        # Chart Rendering
-        if theme_choice == "Cyberpunk Glow":
-            import matplotlib.pyplot as plt
-            import mplcyberpunk
-            plt.style.use("cyberpunk")
-            fig, ax = plt.subplots(figsize=(10,5))
-            if bg_image is not None:
-                ax.imshow(bg_image, extent=[
-                    hist.index.min(), hist.index.max(),
-                    hist["Close"].min(), hist["Close"].max()
-                ], aspect='auto', alpha=0.25, zorder=0)
-            ax.plot(hist.index, hist["Close"], label=ticker, linewidth=2, zorder=2)
-            ax.set_title(f"{ticker} Stock Price ({period})", fontsize=14)
-            ax.set_xlabel("Date")
-            ax.set_ylabel("Price ($)")
-            plt.legend()
-            mplcyberpunk.add_glow_effects()
-            st.pyplot(fig)
-        else:
-            fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7,0.3])
-            fig.add_trace(go.Candlestick(
-                x=hist.index,
-                open=hist['Open'],
-                high=hist['High'],
-                low=hist['Low'],
-                close=hist['Close'],
-                name='Price',
-                increasing_line_color='green',
-                decreasing_line_color='red'
-            ), row=1, col=1)
-            fig.add_trace(go.Bar(
-                x=hist.index,
-                y=hist['Volume'],
-                name='Volume',
-                marker_color='blue',
-                opacity=0.3
-            ), row=2, col=1)
-            fig.update_layout(
-                template='plotly_white',
-                title=f"{ticker} Classic Trading Chart",
-                xaxis=dict(rangeslider_visible=False),
-                height=700,
-                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        # --- Cyberpunk Glow Chart (Always Dark Mode) ---
+        import matplotlib.pyplot as plt
+        import mplcyberpunk
+        plt.style.use("cyberpunk")
+        fig, ax = plt.subplots(figsize=(10,5))
+        if bg_image is not None:
+            ax.imshow(bg_image, extent=[
+                hist.index.min(), hist.index.max(),
+                hist["Close"].min(), hist["Close"].max()
+            ], aspect='auto', alpha=0.25, zorder=0)
+        ax.plot(hist.index, hist["Close"], label=ticker, linewidth=2, zorder=2)
+        ax.set_title(f"{ticker} Stock Price ({period})", fontsize=14)
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price ($)")
+        plt.legend()
+        mplcyberpunk.add_glow_effects()
+        st.pyplot(fig)
 
-        # Metrics
+        # --- Metrics ---
         col1, col2, col3, col4 = st.columns(4)
         price = info.get("currentPrice")
         cap = info.get("marketCap")
@@ -192,7 +163,7 @@ for ticker in tickers:
                 pct = (change / hist_5d["Close"].iloc[-2]) * 100
                 st.metric("Daily Change", f"${change:.2f}", f"{pct:.2f}%")
 
-        # --- Collapsible Company Info (Cyberpunk Glow) ---
+        # --- Company Info ---
         summary = info.get("longBusinessSummary", "No company description available.")
         if summary and summary.strip():
             st.markdown("""
@@ -219,7 +190,7 @@ for ticker in tickers:
 
         st.markdown("---")
 
-        # News
+        # --- News ---
         st.subheader(f"📰 {ticker} Recent News")
         if not finnhub_api:
             st.info("Enter your Finnhub API key in the sidebar to enable company news.")
