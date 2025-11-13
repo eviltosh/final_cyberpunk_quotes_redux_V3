@@ -57,13 +57,13 @@ with open("cyberpunk_style_embedded.css", "r", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # --- Title + GitHub Avatar ---
+# --- Title + GitHub Avatar (Centered) ---
 st.markdown("""
-<div style='display:flex;align-items:center;gap:15px;'>
+<div style='display:flex;justify-content:center;align-items:center;gap:15px;'>
     <img src='https://avatars.githubusercontent.com/u/34708224?s=96&v=4' width='60' style='border-radius:50%;border:2px solid #00ffff;box-shadow:0 0 10px #00ffff;'>
     <h1 class='cyberpunk-title'>CYBERPUNK QUOTES</h1>
 </div>
 """, unsafe_allow_html=True)
-
 # --- Parse tickers ---
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
@@ -214,7 +214,7 @@ for ticker in tickers:
                 </style>
             """, unsafe_allow_html=True)
 
-            with st.expander("📘 COMPANY INFO (click to expand)"):
+            with st.expander("📘 Company Info (click to expand)"):
                 st.write(summary)
         else:
             st.info("No company description available.")
